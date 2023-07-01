@@ -1,0 +1,34 @@
+
+@baseUrl = http://localhost:3001
+@productId = prod_NSdPPXS9jTc9K0
+@priceId = price_1Mhi8hHIiXsDEnwUIhwuK5oZ
+
+@customerId = cus_O98OFsQ5Omy6Qj
+
+### get products
+GET {{baseUrl}}/stripe/products
+
+### get product price
+GET {{baseUrl}}/stripe/products/{{productId}}/prices
+
+### create customer 
+POST {{baseUrl}}/stripe/customers
+Content-Type: application/json
+
+{
+    "email": "nilushan.silva@gmail.com",
+    "name": "Nilushan Silva"
+
+}
+
+
+
+### create subscription
+POST {{baseUrl}}/stripe/subscriptions
+Content-Type: application/json
+
+{
+    "customerId": "{{customerId}}",
+    "priceId": "{{priceId}}"    
+}
+
