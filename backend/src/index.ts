@@ -29,9 +29,10 @@ app.get('/', (req, res) => {
 });
 
 app.get('/stripe/products', (req, res) => {
-  stripe.listProducts().then((products) => {
-    res.send(products);
-  })
+  stripe.listProducts()
+    .then((products) => {
+      res.send(products);
+    })
     .catch((err) => {
       res.status(500).send(err);
     })
@@ -49,6 +50,30 @@ app.get('/stripe/products/:productId/prices', (req, res) => {
 
 });
 
+// get price by id
+app.get('/stripe/prices/:priceId', (req, res) => {
+  const priceId = req.params.priceId as string;
+  stripe.getPrice(priceId)
+  .then(price =>{
+    res.send(price);
+  })
+  .catch(err => {
+    res.status(500).send(err);
+  })
+
+});
+
+// get product and prices 
+app.get('/stripe/products_prices', (req, res) => {
+  stripe.listProductsAndPrices()
+    .then((productsAndPrices) => {
+      res.send(productsAndPrices);
+    })
+    .catch((err) => {
+      res.status(500).send(err);
+    });
+});
+
 // create customer
 
 app.post('/stripe/customers', (req, res) => {
@@ -61,6 +86,19 @@ app.post('/stripe/customers', (req, res) => {
       res.status(500).send(err);
     });
 
+});
+
+// create payment intent 
+app.post('/stripe/payment_intents', (req, res) => {
+  const { amount, customerId } = req.body;
+  stripe.createPaymentIntent(amount, customerId)
+
+    .then((paymentIntent) => {
+      res.send(paymentIntent);
+    })
+    .catch((err) => {
+      res.status(500).send(err);
+    });
 });
 
 // create subscription

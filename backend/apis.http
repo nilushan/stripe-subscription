@@ -11,6 +11,9 @@ GET {{baseUrl}}/stripe/products
 ### get product price
 GET {{baseUrl}}/stripe/products/{{productId}}/prices
 
+### get products and prices
+GET {{baseUrl}}/stripe/products_prices
+
 ### create customer 
 POST {{baseUrl}}/stripe/customers
 Content-Type: application/json
@@ -19,6 +22,15 @@ Content-Type: application/json
     "email": "nilushan.silva@gmail.com",
     "name": "Nilushan Silva"
 
+}
+
+### create customer 
+POST {{baseUrl}}/stripe/payment_intents
+Content-Type: application/json
+
+{
+    "customerId": "{{customerId}}",
+    "amount": 50
 }
 
 
