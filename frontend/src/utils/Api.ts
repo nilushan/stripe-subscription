@@ -1,9 +1,10 @@
 
-import { PaymentIntentResponse, Price, ProductsAndPrices } from '../../../shared/types'
+import { Customer, PaymentIntentResponse, Price, ProductsAndPrices, Subscription } from '../../../shared/types'
+import { configs } from './config';
 
 export class BackendApi {
 
-    private backendUrl = "http://localhost:3001";  // TODO define a config file for this
+    private backendUrl = configs.backendUrl;  // TODO define a config file for this
 
     public getProductsAndPrices = () => {
         return new Promise<ProductsAndPrices>((resolve, reject) => {
@@ -59,16 +60,63 @@ export class BackendApi {
                     })
                 })
                 .then(async response => {
+                    const res = await response.json();
                     if (response.status === 200) {
-                        const res = await response.json();
                         resolve(res);
                     } else {
-                        reject('not a 200 response');
+                        reject(res);
                     }
                 })
                 .catch(err => {
                     reject(err);
                 })
         });
+    }
+
+    //create subscription
+    public createSubscription = (customerId: string, priceId: string) => {
+        return new Promise<Subscription>((resolve, reject) => {
+            fetch(this.backendUrl + '/stripe/subscriptions',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customerId: customerId,
+                        priceId: priceId
+                    })
+                })
+                .then(async response => {
+                    const res = await response.json();
+                    if (response.status === 200) {
+                        resolve(res);
+                    } else {
+                        reject(res);
+                    }
+                })
+                .catch(err => {
+                    reject(err);
+                })
+        })
+    }
+
+    // get customer by email
+    public getCustomerByEmail = (email: string) => {
+
+        return new Promise<Customer>((resolve, reject) => {
+            fetch(this.backendUrl + '/stripe/customers?email=' + email)
+                .then(async response => {
+                    const res = await response.json();
+                    if (response.status === 200) {
+                        resolve(res);
+                    } else {
+                        reject(res);
+                    }
+                })
+                .catch(err => {
+                    reject(err);
+                })
+        })
     }
 }

@@ -1,9 +1,9 @@
 
 @baseUrl = http://localhost:3001
 @productId = prod_NSdPPXS9jTc9K0
-@priceId = price_1Mhi8hHIiXsDEnwUIhwuK5oZ
+@priceId = price_1Mis81HIiXsDEnwUGwBGKnrX
 
-@customerId = cus_O98OFsQ5Omy6Qj
+@customerId = cus_ODU2NAzd6Hddcg
 
 ### get products
 GET {{baseUrl}}/stripe/products
@@ -23,6 +23,9 @@ Content-Type: application/json
     "name": "Nilushan Silva"
 
 }
+
+### get customer by email
+GET {{baseUrl}}/stripe/customers?email=nilushan.silva@gmail.com 
 
 ### create customer 
 POST {{baseUrl}}/stripe/payment_intents
@@ -44,3 +47,6 @@ Content-Type: application/json
     "priceId": "{{priceId}}"    
 }
 
+
+### get subscriptions for user
+GET {{baseUrl}}/stripe/subscriptions?customerId={{customerId}}

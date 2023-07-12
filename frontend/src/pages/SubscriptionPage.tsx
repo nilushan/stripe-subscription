@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { CardElement, useStripe, useElements, AddressElement, PaymentElement, Elements } from '@stripe/react-stripe-js';
+import { useStripe, useElements, AddressElement, PaymentElement, Elements } from '@stripe/react-stripe-js';
 import { Appearance, loadStripe } from '@stripe/stripe-js';
 import { configs } from '../utils/config'
 import { Link, useParams } from 'react-router-dom';
 import { BackendApi } from '../utils/Api';
 
 // const api = new BackendApi();
+const customerid = 'cus_ODU2NAzd6Hddcg';
 
 const stripeSecret = configs.stripe.secret;
 const stripePromise = loadStripe(stripeSecret);
@@ -26,30 +27,29 @@ const SubscriptionComponent = () => {
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
+    const cardElement = elements.getElement(PaymentElement);
+    const addressElement = elements.getElement(AddressElement);
 
     if (!cardElement) {
       setLoading(false);
       return;
     }
 
-    const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
-      card: cardElement,
-      billing_details: {
-        name: customer.name,
-        email: customer.email,
-      },
-    });
+    await stripe.confirmPayment({
 
-    if (error) {
-      console.error(error);
-      setLoading(false);
-    } else {
-      // Send paymentMethod.id and product to your server to create a subscription
-      console.log(paymentMethod.id, product);
-      setLoading(false);
-    }
+      elements,
+      confirmParams: {
+        return_url: 'http://localhost:3000/subscribesuccess',
+      },
+    })
+      .then(payment => {
+        console.log(payment)
+      })
+      .catch((err) => {
+        setLoading(false);
+        console.error(err);
+      });
+
   };
 
   return (
@@ -58,11 +58,11 @@ const SubscriptionComponent = () => {
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       <form onSubmit={handleSubmit} style={{ maxWidth: '400px', width: '100%', padding: '20px', borderRadius: '4px', boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)', backgroundColor: '#fff' }}>
         <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>Subscribe to Zimi </h2>
-        
-          <label>
-            Billing address:
-            <AddressElement options={{ mode: 'billing' }} />
-          </label>
+
+        <label>
+          Billing address:
+          <AddressElement options={{ mode: 'billing' }} />
+        </label>
 
         <label style={{ display: 'block', marginBottom: '10px' }}>
           Payment details:
@@ -102,20 +102,34 @@ const SubscriptionPage = (props: ISubscriptionPageProps) => {
       if (priceid !== undefined) {
         setIsLoading(true);
 
-        api.getPrice(priceid)
-          .then(priceRet => {
-            // console.log(priceRet)
+        // api.getPrice(priceid)
+        //   .then(priceRet => {
+        //     // console.log(priceRet)
 
-            api.createPaymentIntent(priceRet.unit_amount, priceRet.currency)
-              .then((res) => {
-                console.log(res)
-                setclientSecret(res.clientSecret);
-                setIsLoading(false)
-              })
-              .catch((err) => {
-                setErrorMsg(JSON.stringify(err));
-                setIsLoading(false)
-              })
+        //     api.createPaymentIntent(priceRet.unit_amount, priceRet.currency)
+        //       .then((res) => {
+        //         console.log(res)
+        //         setclientSecret(res.clientSecret);
+        //         setIsLoading(false)
+        //       })
+        //       .catch((err) => {
+        //         setErrorMsg(JSON.stringify(err));
+        //         setIsLoading(false)
+        //       })
+
+
+        //   })
+        //   .catch(err => {
+        //     console.log(err);
+        //     setErrorMsg(JSON.stringify(err));
+        //     setIsLoading(false)
+        //   })
+
+        api.createSubscription(customerid, priceid)
+          .then(subscription => {
+            console.log(subscription)
+            setIsLoading(false)
+            setclientSecret(subscription.latest_invoice.payment_intent.client_secret);
 
           })
           .catch(err => {
@@ -123,6 +137,8 @@ const SubscriptionPage = (props: ISubscriptionPageProps) => {
             setErrorMsg(JSON.stringify(err));
             setIsLoading(false)
           })
+
+
       }
     }
   }, [priceid, api]);
@@ -139,6 +155,12 @@ const SubscriptionPage = (props: ISubscriptionPageProps) => {
   return (
     <div>
       {isLoading && <div> Loading ... </div>}
+      <div>
+        Products Page : <Link to="/products"> Products </Link>
+      </div>
+      <div>
+        {errorMsg && <div> Error message :  {errorMsg} </div>}
+      </div>
 
       {clientSecret && <Elements stripe={stripePromise} options={
         {
@@ -149,13 +171,7 @@ const SubscriptionPage = (props: ISubscriptionPageProps) => {
         <SubscriptionComponent />
       </Elements>
       }
-      <div>
-        {errorMsg && <div> Error message :  {errorMsg} </div>}
-      </div>
 
-      <div>
-        Products Page : <Link to="/products"> Products </Link>
-      </div>
     </div>
   )
 }

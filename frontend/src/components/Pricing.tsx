@@ -48,7 +48,7 @@ const Pricing = () => {
                         (
                             <div>
                                 <h6 className="card-subtitle">{price.unit_amount} / {price.recurring.interval} </h6>
-                                <button className="button">{ 'Subscribe' }</button>
+                                <button className="button">{'Subscribe'}</button>
                             </div>
                         )
                         )}
